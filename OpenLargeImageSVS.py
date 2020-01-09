@@ -20,9 +20,7 @@ import skimage.color as color
 import skimage
 import openslide
 import PIL.Image
-import py_wsi
-import py_wsi.imagepy_toolkit as tk
-import py_wsi.dataset as ds
+
 from torchviz import make_dot
 from openslide import open_slide
 from openslide.deepzoom import DeepZoomGenerator
@@ -43,11 +41,11 @@ parser.add_argument('-b', '--basepath',
                     help="base path to add to file names, helps when producing data using tsv file as input",
                     default="", type=str)
 
-#tk.show_images([new_tile, new_tile2, new_tile3,new_tile4, new_tile5, new_tile6, new_tile7, new_tile8, new_tile9], 3, 9)
+
 args = parser.parse_args(["-mbrca1_no_58_densenet_best_model_2_8_8_8_8_8.pth"])
 
 device = torch.device(args.gpuid if args.gpuid!=-2 and torch.cuda.is_available() else 'cpu')
-checkpoint = torch.load("brca1_no_58_densenet_best_model_2_8_8_8_8_8.pth", map_location=lambda storage, loc: storage) #load checkpoint to CPU and then put to device https://discuss.pytorch.org/t/saving-and-loading-torch-models-on-2-machines-with-different-number-of-gpu-devices/6666
+checkpoint = torch.load("/home/sudopizzai/Documents/Lab/deepLearning/brac/models/brca1_no_58_densenet_best_model__32_2_2_4_4_8_t_93.pth", map_location=lambda storage, loc: storage) #load checkpoint to CPU and then put to device https://discuss.pytorch.org/t/saving-and-loading-torch-models-on-2-machines-with-different-number-of-gpu-devices/6666
 
 model = DenseNet(growth_rate=checkpoint["growth_rate"], block_config=checkpoint["block_config"],
                  num_init_features=checkpoint["num_init_features"], bn_size=checkpoint["bn_size"],
@@ -55,25 +53,26 @@ model = DenseNet(growth_rate=checkpoint["growth_rate"], block_config=checkpoint[
 
 model.load_state_dict(checkpoint["model_dict"])
 model.eval()
-osh  = openslide.OpenSlide("/home/maorvelous/Documents/Lab/deepLearning/data/gdc/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF.svs")
+osh  = openslide.OpenSlide("/home/sudopizzai/Documents/data/TCGA/TCGA-A8-A090-01Z-00-DX1.01574070-D65E-486F-B69D-0F8E3816D057.svs")
 cmap= matplotlib.cm.tab10
 
 #print(tiles._z_t_downsample)
 #{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_
 #{tile_size}_{downsamples_level}_{cycle_step}
 
-patch_size = 8 #if patch is less than 32 fail
+patch_size = 32 #if patch is less than 32 fail
 batch_size = 64 #should be a power of 2
-level = 0
+level = 1
 mask_level = 1 # con la mask = 2 ValueError: could not broadcast input array from shape (16,16,3) into shape (15,16,3)
 
-stride_size= patch_size // 4
-tile_size = stride_size * 8 * 2
+stride_size= patch_size // 16
+tile_size = stride_size * 2 * 2
 tile_pad = patch_size - stride_size
 
-downsamples_level = round(osh.level_downsamples[level])
+downsamples_level = round(osh.level_downsamples[level]) / 4
 
-cycle_step = round(tile_size * downsamples_level)
+cycle_step = round(tile_size * downsamples_level) // 2
+
 nclasses = 3
 
 ds=int(downsamples_level)
@@ -113,6 +112,7 @@ print(range(0,img_resized.width,round(tile_size * downsamples_level)))
 plt.imshow(mask)
 plt.show()
 
+print(f'cycle_step_{cycle_step}_patchSize_{patch_size}_batchSize_{batch_size}_level_{level}_maskLevel_{mask_level}_{shape[0]}_{shape[1]}_StrideSize{stride_size}')
 for y in tqdm(range(0, img_resized.height,cycle_step), desc="outer"):
     for x in tqdm(range(0, img_resized.width,cycle_step), desc=f"innter {y}", leave=False):
 
@@ -153,9 +153,9 @@ for y in tqdm(range(0, img_resized.height,cycle_step), desc="outer"):
         npmm[y//stride_size//ds:y//stride_size//ds+tile_size//stride_size,x//stride_size//ds:x//stride_size//ds+tile_size//stride_size,:]=output*255
 
 from skimage.external.tifffile import TiffWriter
-with TiffWriter(f'/home/maorvelous/Documents/Lab/react/images/BRACA_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.tif', bigtiff=True, imagej=True) as tif:
-    tif.save(npmm, compress=0, tile=(256,256) )
+with TiffWriter(f'/home/sudopizzai/Documents/data/images/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.tif', bigtiff=True, imagej=True) as tif:
+    tif.save(npmm, compress=0, tile=(256,256))
 
-image = Image.open(f'/home/maorvelous/Documents/Lab/react/images/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.tif')
+image = Image.open(f'/home/sudopizzai/Documents/data/images/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.tif')
 image.mode = 'I'
-image.point(lambda i:i*(1./256)).convert('L').save(f'/home/maorvelous/Documents/Lab/react/images/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.jpeg')
+image.point(lambda i:i*(1./256)).convert('L').save(f'/home/sudopizzai/Documents/data/images/TCGA-OL-A5RW-01Z-00-DX1.E16DE8EE-31AF-4EAF-A85F-DB3E3E2C3BFF_{patch_size}_{batch_size}_{level}_{mask_level}_{shape[0]}_{shape[1]}_{stride_size}_{tile_size}_{downsamples_level}_{cycle_step}_svs.jpeg')
