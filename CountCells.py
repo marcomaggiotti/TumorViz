@@ -40,6 +40,8 @@ print("image size ", img_resized.size)
 shape = img_resized.size #osh.level_dimensions[level]
 
 img = img_resized #np.asarray(new_tile9)[:, :, 0:3] #osh.read_region((0, 0), mask_level, osh.level_dimensions[mask_level]) #
+imgArray = np.array(img)
+
 gray = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
 _, thresh = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 plt.imshow(gray) # blue on green well defined dots
@@ -62,22 +64,23 @@ print('Total circles:', n_circles)
 ret,thresh = cv2.threshold(gray,127,255,1)
 contours,h = cv2.findContours(thresh,1,2)
 
-imCopy = im.copy()
-ret,thresh = cv2.threshold(gray,127,255,0)
+imCopy = imgArray.copy()
+ret,thresh = cv2.threshold(imgArray,127,255,0)
 
-image, contours, hierarchy =  cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-cv2.drawContours(imCopy,contours,-1,(0,255,0))
+##image, contours, hierarchy =  cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+cv2.drawContours(imCopy,contours,-1,(0,255,0), 3)
+imCopy = cv2.resize(imCopy, (3000, 2000))
 cv2.imshow('draw contours',imCopy)
 cv2.waitKey(0)
 
-imgArray = np.array(img)
+"""
 for cnt in contours[0:100]:
-    cv2.drawContours(imgArray,[cnt],-1,(0,255,0))
-
+    cv2.drawContours(imgArray,[cnt],-1,(0,255,0),10)
     imgArray = cv2.resize(imgArray, (960, 540))                    # Resize image
     cv2.imshow("output", imgArray)                            # Show image
     cv2.waitKey(0)
-
+"""
 print("mask")
 
 plt.imshow(mask) # blue on yellow well defined dots
