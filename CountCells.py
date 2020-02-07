@@ -56,11 +56,9 @@ singular_mask = (min_area < label_area) & (label_area <= max_area)
 circle_area = np.mean(label_area[singular_mask])
 
 n_circles = int(np.sum(np.round(label_area / circle_area)))
-
 print('Total circles:', n_circles)
 
 ##### second findContours
-
 ret,thresh = cv2.threshold(gray,127,255,1)
 contours,h = cv2.findContours(thresh,1,2)
 
@@ -70,36 +68,48 @@ ret,thresh = cv2.threshold(imgArray,127,255,0)
 ##image, contours, hierarchy =  cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 cv2.drawContours(imCopy,contours,-1,(0,255,0), 3)
-imCopy = cv2.resize(imCopy, (3000, 2000))
+imCopy = cv2.resize(imCopy, (2000, 1500))
 cv2.imshow('draw contours',imCopy)
 cv2.waitKey(0)
 
-"""
-for cnt in contours[0:100]:
-    cv2.drawContours(imgArray,[cnt],-1,(0,255,0),10)
-    imgArray = cv2.resize(imgArray, (960, 540))                    # Resize image
-    cv2.imshow("output", imgArray)                            # Show image
-    cv2.waitKey(0)
+for cnt in contours[0:10000]:
+
+    area = cv2.contourArea(cnt)
+    print( area," ", cnt )
+    cv2.drawContours( imgArray, [cnt], -1, (0,255,0), 3 )
+
+    #imgArray = cv2.resize(imgArray, (960, 540)) #Resize image
+#cv2.drawContours( imgArray, contours, -1, (0,255,0), 3 )
+
+imgArray = cv2.resize(imgArray, (2000, 1500))
+cv2.imshow("output", imgArray)                            # Show image
+cv2.waitKey(0)
+
+
 """
 print("mask")
 
 plt.imshow(mask) # blue on yellow well defined dots
 plt.show()
 
+print("tresh = 127,255,0")
 plt.imshow(thresh) #
 plt.show()
 
 #image_file = Image.open(np.array(gray))
 
+
 cv2_im = cv2.cvtColor(gray,cv2.COLOR_BGR2RGB) # now in black and white
 pil_im = Image.fromarray(cv2_im)
 plt.imshow(pil_im)
 plt.show()
+"""
 
 #cnts = cv2.findContours(pil_im, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[-2]
 #print(cnts)
 
 #xcnts = []
+
 """
 for cnt in cnts:
     if 0 < cv2.contourArea(cnt) < 20000:
