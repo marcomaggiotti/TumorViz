@@ -89,6 +89,7 @@ n_circles = int(np.sum(np.round(label_area / circle_area)))
 print('Total circles:', n_circles)
 
 ##### second findContours
+blur = cv2.GaussianBlur(gray, (7, 7), 2)
 ret,thresh = cv2.threshold(gray,127,255,1)
 contours,h = cv2.findContours(thresh,1,2)
 
@@ -119,7 +120,7 @@ for cnt in contours[40000:60000]:
 
         print(' area of the contour ', area)
 
-        blur = cv2.GaussianBlur(img, (7, 7), 2)
+
 
         #we draw one by on the contour to the mask
         cv2.drawContours(mask, [cnt], 0, (255), -1)

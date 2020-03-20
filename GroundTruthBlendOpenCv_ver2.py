@@ -23,7 +23,7 @@ import PIL.Image
 
 size = 896, 385
 
-fname=r"/home/maorvelous/Documents/Lab/deepLearning/data/mib1/BRCA03_MIB1.mrxs"
+fname=r"/home/sudopizzai/Documents/data/brca1/mib1/BRCA03_MIB1.mrxs"
 openSlideReader  = openslide.OpenSlide(fname)
 
 #add mask creation which skips parts of image
@@ -32,7 +32,7 @@ img_ground_Openslide = openSlideReader.read_region((0, 0), mask_level, openSlide
 img_ground_Openslide_array = np.asarray(img_ground_Openslide)[:, :, 0:3]
 plt.imshow(img_ground_Openslide)
 plt.show()
-imgRegions = imread('/home/maorvelous/Documents/Lab/deepLearning/PytorchDigitalPathology/BracCedric/03.tif', key = 0)
+imgRegions = imread('/home/sudopizzai/Documents/Lab/deepLearning/brac/images/03.tif', key = 0)
 hsv=cv2.cvtColor(imgRegions,cv2.COLOR_BGR2YCrCb)
 
 darkGreen_lo=np.array([60,60,60])
@@ -84,7 +84,7 @@ resized = cv2.resize(edged, dim, interpolation = cv2.INTER_AREA)
 contoursGroundArray = cv2.drawContours(img_ground_Openslide_array, contours, -1, (0, 255, 0), 3)
 print(contoursGroundArray)
 
-new = cv2.imread('/home/maorvelous/Documents/Lab/deepLearning/PytorchDigitalPathology/BracCedric/tumor_3.jpg')
+new = cv2.imread('/home/sudopizzai/Documents/data/images/tumor_3.jpg')
 new = cv2.resize(new, imgRegions.shape[1::-1])
 dst = cv2.addWeighted(new, 0.9, imgRegions, 0.4, 0.0)
 
